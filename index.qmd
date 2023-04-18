@@ -1,6 +1,6 @@
 ---
 title: "Homework 5"
-author: "[Insert your name here]{style='background-color: yellow;'}"
+author: "Jack Benadon{style='background-color: yellow;'}"
 toc: true
 title-block-banner: true
 title-block-style: default
@@ -78,10 +78,12 @@ Read the data file as a tibble in R. Preprocess the data such that:
 2. all column names to lower case for consistency
 3. Any observations with missing values are dropped
 
-```R
+```{R}
 path <- "data/housing.csv"
-
-df <- ... # Insert your code here
+df <- read.csv(path) # Insert your code here
+df <- na.omit(df)
+df$ocean_proximity <- factor(df$ocean_proximity)
+df
 ```
 
 ---
@@ -90,8 +92,12 @@ df <- ... # Insert your code here
 
 Visualize the correlation matrix of all numeric columns in `df` using `corrplot()`
 
-```R
-df %>% ... # Insert your code here
+```{R}
+library(corrplot)
+df %>%
+  select_if(is.numeric) %>%
+  cor() %>%
+  corrplot(method = 'color', type = 'upper')
 ```
 
 ---
@@ -100,7 +106,7 @@ df %>% ... # Insert your code here
 
 Split the data `df` into `df_train` and `df_split` using `test_ind` in the code below:
 
-```R
+```{R}
 set.seed(42)
 test_ind <- sample(
   1:nrow(df), 
@@ -108,8 +114,8 @@ test_ind <- sample(
   replace=FALSE
 )
 
-df_train <- ... # Insert your code here
-df_test  <- ... # Insert your code here
+df_train <- df[-test_ind, ]
+df_test  <- df[test_ind, ]
 ```
 
 ---
@@ -129,23 +135,43 @@ Fit a linear regression model to predict the `median_house_value` :
 
 Interpret the coefficients and summarize your results. 
 
-```R
-lm_fit <- ... # Insert your code here
-... # Insert your code here
-```
+```{R}
+lm_fit <- lm(df$median_house_value ~ df$latitude + df$longitude + df$housing_median_age + df$total_rooms + df$total_bedrooms + df$population + df$median_income + df$ocean_proximity ) 
 
+summary(lm_fit)
+```
+Latitude: For every one degree increase in latitude, the median house value goes down by 2.624e+04
+
+Longitude: For every one degree increase in latitude, the median house value goes down by  2.776e+04 
+
+Housing median age: For every one degree increase in latitude, the median house value goes up by 1.082e+03
+
+Total rooms: For every one degree increase in latitude, the median house value goes down by 6.445e+00
+
+Total bedrooms: For every one degree increase in latitude, the median house value goes up by  1.378e+02
+
+Population: For every one degree increase in latitude, the median house value goes down by 3.449e+01
+
+Ocean proximity (inland): If it is inland, the median house value goes down by 3.926e+04
+
+Ocean proximity (island): If it is island, the median house value goes up by 1.480e+05
+
+Ocean proximity (near bay): If it is near bay, the median house value goes down by 4.102e+03
+
+Ocean proximity (near ocean): If it is near the ocean, the median house value goes up by 4.058e+03
 ---
 
 ###### 1.5 (5 points)
 
 Complete the `rmse` function for computing the Root Mean-Squared Error between the true `y` and the predicted `yhat`, and use it to compute the RMSE for the regression model on `df_test`
 
-```R
+```{R}
 rmse <- function(y, yhat) {
   sqrt(mean((y - yhat)^2))
 }
 
-lm_predictions <- ... # Insert your code here
+lm_predictions <- predict(lm_fit, df_test)
+rmse(df_test$median_house_value, lm_predictions)
 ```
 
 
@@ -153,7 +179,7 @@ lm_predictions <- ... # Insert your code here
 
 Fit a decision tree model to predict the `median_house_value` using the same predictors as in 1.4. Use the `rpart()` function.
 
-```R
+```{R}
 rpart_fit <- ... # Insert your code here
 rpart_predictions <- ... # Insert your code here
 ```
